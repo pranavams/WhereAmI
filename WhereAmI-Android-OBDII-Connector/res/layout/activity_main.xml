@@ -8,9 +8,20 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context=".MainActivity" >
 
-    <TextView
+    <Button
+        android:id="@+id/btnBlueToothDevice"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/hello_world" />
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:text="Show Bluetooth Devices" />
 
+    <Button
+        android:id="@+id/btnRPMValue"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/btnBlueToothDevice"
+        android:layout_below="@+id/btnBlueToothDevice"
+        android:layout_marginTop="29dp"
+        android:text="RPM:" />
 </RelativeLayout>

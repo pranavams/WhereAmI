@@ -12,9 +12,11 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
+import android.view.View;
+import android.view.View.OnClickListener;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 
 import com.github.pires.obd.commands.engine.RPMCommand;
 import com.github.pires.obd.commands.protocol.EchoOffCommand;
@@ -31,8 +33,31 @@ public class MainActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-		//showBlueToothSelector();
-		showErrorMessage("Title", "Message");
+
+		Button button = (Button) findViewById(R.id.btnBlueToothDevice);
+
+		button.setOnClickListener(new OnClickListener() {
+			public void onClick(View v) {
+				try {
+					showBlueToothSelector();
+				} catch (Exception ex) {
+					showErrorMessage(ex.getMessage() + " " + ex.getClass().getName(), "While Showing Bluetooth");
+				}
+			}
+		});
+
+		final Button btnRPM = (Button) findViewById(R.id.btnRPMValue);
+		btnRPM.setOnClickListener(new OnClickListener() {
+			public void onClick(View v) {
+				try {
+					String rpm = getRPM();
+					btnRPM.setText(rpm);
+				} catch (Exception ex) {
+					showErrorMessage(ex.getMessage() + " " + ex.getClass().getName(), "While Showing Bluetooth");
+				}
+			}
+		});
+
 	}
 
 	private void showBlueToothSelector() {
@@ -75,7 +100,7 @@ public class MainActivity extends Activity {
 			socket.connect();
 			initializeOBDAdaptor(socket);
 		} catch (IOException e) {
-			e.printStackTrace();
+			showErrorMessage(e.getMessage(), "WhereAmI");
 		}
 	}
 
@@ -86,7 +111,7 @@ public class MainActivity extends Activity {
 			new TimeoutCommand(5000).run(socket.getInputStream(), socket.getOutputStream());
 			new SelectProtocolCommand(ObdProtocols.AUTO).run(socket.getInputStream(), socket.getOutputStream());
 		} catch (InterruptedException e) {
-			e.printStackTrace();
+			showErrorMessage(e.getMessage(), "WhereAmI");
 		}
 	}
 
@@ -97,16 +122,17 @@ public class MainActivity extends Activity {
 		return true;
 	}
 
-	private void issueCommand() {
+	private String getRPM() {
 		RPMCommand engineRpmCommand = new RPMCommand();
-		while (!Thread.currentThread().isInterrupted()) {
-			try {
-				engineRpmCommand.run(socket.getInputStream(), socket.getOutputStream());
-				Log.d("issueCommand", "RPM: " + engineRpmCommand.getFormattedResult());
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
+		// while (!Thread.currentThread().isInterrupted()) {
+		try {
+			engineRpmCommand.run(socket.getInputStream(), socket.getOutputStream());
+			return engineRpmCommand.getFormattedResult();
+		} catch (Exception e) {
+			showErrorMessage(e.getMessage(), "WhereAmI");
+			return "---";
 		}
+		// }
 	}
 
 	public void showErrorMessage(String message, String title) {
