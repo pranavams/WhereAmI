@@ -1,12 +1,15 @@
 package com.example.whereami_android_obdii_connector;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Set;
+import java.util.UUID;
 
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothSocket;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.Menu;
@@ -27,11 +30,9 @@ public class MainActivity extends Activity {
 
 		BluetoothAdapter btAdapter = BluetoothAdapter.getDefaultAdapter();
 		Set<BluetoothDevice> pairedDevices = btAdapter.getBondedDevices();
-		if (pairedDevices.size() > 0) {
-			for (BluetoothDevice device : pairedDevices) {
-				deviceStrs.add(device.getName() + "\n" + device.getAddress());
-				devices.add(device.getAddress());
-			}
+		for (BluetoothDevice device : pairedDevices) {
+			deviceStrs.add(device.getName() + " - " + device.getAddress());
+			devices.add(device.getAddress());
 		}
 
 		// show list
@@ -48,13 +49,29 @@ public class MainActivity extends Activity {
 						dialog.dismiss();
 						int position = ((AlertDialog) dialog).getListView()
 								.getCheckedItemPosition();
-						String deviceAddress = devices.get(position);
-						// TODO save deviceAddress
+						connectToBluetoothDevice(devices.get(position));
 					}
+
 				});
 
 		alertDialog.setTitle("Choose Bluetooth device");
 		alertDialog.show();
+	}
+
+	public void connectToBluetoothDevice(String deviceAddress) {
+		BluetoothAdapter btAdapter = BluetoothAdapter.getDefaultAdapter();
+
+		BluetoothDevice device = btAdapter.getRemoteDevice(deviceAddress);
+
+		UUID uuid = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
+
+		BluetoothSocket socket;
+		try {
+			socket = device.createInsecureRfcommSocketToServiceRecord(uuid);
+			socket.connect();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	@Override
