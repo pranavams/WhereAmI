@@ -12,9 +12,11 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.widget.ArrayAdapter;
 
+import com.github.pires.obd.commands.engine.RPMCommand;
 import com.github.pires.obd.commands.protocol.EchoOffCommand;
 import com.github.pires.obd.commands.protocol.LineFeedOffCommand;
 import com.github.pires.obd.commands.protocol.SelectProtocolCommand;
@@ -23,11 +25,14 @@ import com.github.pires.obd.enums.ObdProtocols;
 
 public class MainActivity extends Activity {
 
+	private BluetoothSocket socket = null;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-		showBlueToothSelector();
+		//showBlueToothSelector();
+		showErrorMessage("Title", "Message");
 	}
 
 	private void showBlueToothSelector() {
@@ -63,12 +68,8 @@ public class MainActivity extends Activity {
 
 	public void connectToBluetoothDevice(String deviceAddress) {
 		BluetoothAdapter btAdapter = BluetoothAdapter.getDefaultAdapter();
-
 		BluetoothDevice device = btAdapter.getRemoteDevice(deviceAddress);
-
 		UUID uuid = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
-
-		BluetoothSocket socket;
 		try {
 			socket = device.createInsecureRfcommSocketToServiceRecord(uuid);
 			socket.connect();
@@ -82,9 +83,7 @@ public class MainActivity extends Activity {
 		try {
 			new EchoOffCommand().run(socket.getInputStream(), socket.getOutputStream());
 			new LineFeedOffCommand().run(socket.getInputStream(), socket.getOutputStream());
-
 			new TimeoutCommand(5000).run(socket.getInputStream(), socket.getOutputStream());
-
 			new SelectProtocolCommand(ObdProtocols.AUTO).run(socket.getInputStream(), socket.getOutputStream());
 		} catch (InterruptedException e) {
 			e.printStackTrace();
@@ -98,4 +97,28 @@ public class MainActivity extends Activity {
 		return true;
 	}
 
+	private void issueCommand() {
+		RPMCommand engineRpmCommand = new RPMCommand();
+		while (!Thread.currentThread().isInterrupted()) {
+			try {
+				engineRpmCommand.run(socket.getInputStream(), socket.getOutputStream());
+				Log.d("issueCommand", "RPM: " + engineRpmCommand.getFormattedResult());
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+	public void showErrorMessage(String message, String title) {
+		new AlertDialog.Builder(this).setTitle(title).setMessage(message)
+				.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int which) {
+						// continue with delete
+					}
+				}).setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int which) {
+						// do nothing
+					}
+				}).setIcon(android.R.drawable.ic_dialog_alert).show();
+	}
 }
