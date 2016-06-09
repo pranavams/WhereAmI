@@ -15,6 +15,12 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.widget.ArrayAdapter;
 
+import com.github.pires.obd.commands.protocol.EchoOffCommand;
+import com.github.pires.obd.commands.protocol.LineFeedOffCommand;
+import com.github.pires.obd.commands.protocol.SelectProtocolCommand;
+import com.github.pires.obd.commands.protocol.TimeoutCommand;
+import com.github.pires.obd.enums.ObdProtocols;
+
 public class MainActivity extends Activity {
 
 	@Override
@@ -38,21 +44,18 @@ public class MainActivity extends Activity {
 		// show list
 		final AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
 
-		ArrayAdapter adapter = new ArrayAdapter(this,
-				android.R.layout.select_dialog_singlechoice,
-				deviceStrs.toArray(new String[deviceStrs.size()]));
+		ArrayAdapter adapter = new ArrayAdapter(this, android.R.layout.select_dialog_singlechoice, deviceStrs.toArray(new String[deviceStrs
+				.size()]));
 
-		alertDialog.setSingleChoiceItems(adapter, -1,
-				new DialogInterface.OnClickListener() {
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						dialog.dismiss();
-						int position = ((AlertDialog) dialog).getListView()
-								.getCheckedItemPosition();
-						connectToBluetoothDevice(devices.get(position));
-					}
+		alertDialog.setSingleChoiceItems(adapter, -1, new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				dialog.dismiss();
+				int position = ((AlertDialog) dialog).getListView().getCheckedItemPosition();
+				connectToBluetoothDevice(devices.get(position));
+			}
 
-				});
+		});
 
 		alertDialog.setTitle("Choose Bluetooth device");
 		alertDialog.show();
@@ -69,7 +72,21 @@ public class MainActivity extends Activity {
 		try {
 			socket = device.createInsecureRfcommSocketToServiceRecord(uuid);
 			socket.connect();
+			initializeOBDAdaptor(socket);
 		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	private void initializeOBDAdaptor(BluetoothSocket socket) throws IOException {
+		try {
+			new EchoOffCommand().run(socket.getInputStream(), socket.getOutputStream());
+			new LineFeedOffCommand().run(socket.getInputStream(), socket.getOutputStream());
+
+			new TimeoutCommand(5000).run(socket.getInputStream(), socket.getOutputStream());
+
+			new SelectProtocolCommand(ObdProtocols.AUTO).run(socket.getInputStream(), socket.getOutputStream());
+		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
 	}

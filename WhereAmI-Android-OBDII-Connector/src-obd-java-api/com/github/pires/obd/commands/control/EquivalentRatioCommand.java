@@ -13,52 +13,55 @@ import com.github.pires.obd.enums.AvailableCommandNames;
  * stoichiometric is 14.64:1 ratio. If the fuel control system was commanded an
  * equivalence ratio of 0.95, the commanded A/F ratio to the engine would be
  * 14.64 * 0.95 = 13.9 A/F.
- *
+ * 
  * @author pires
  * @version $Id: $Id
  */
 public class EquivalentRatioCommand extends PercentageObdCommand {
 
+	/**
+	 * Default ctor.
+	 */
+	public EquivalentRatioCommand() {
+		super("01 44");
+	}
 
-    /**
-     * Default ctor.
-     */
-    public EquivalentRatioCommand() {
-        super("01 44");
-    }
+	/**
+	 * Copy ctor.
+	 * 
+	 * @param other
+	 *            a
+	 *            {@link com.github.pires.obd.commands.control.EquivalentRatioCommand}
+	 *            object.
+	 */
+	public EquivalentRatioCommand(EquivalentRatioCommand other) {
+		super(other);
+	}
 
-    /**
-     * Copy ctor.
-     *
-     * @param other a {@link com.github.pires.obd.commands.control.EquivalentRatioCommand} object.
-     */
-    public EquivalentRatioCommand(EquivalentRatioCommand other) {
-        super(other);
-    }
+	/** {@inheritDoc} */
+	@Override
+	protected void performCalculations() {
+		// ignore first two bytes [hh hh] of the response
+		int a = buffer.get(2);
+		int b = buffer.get(3);
+		percentage = (a * 256 + b) / 32768;
+	}
 
-    /** {@inheritDoc} */
-    @Override
-    protected void performCalculations() {
-        // ignore first two bytes [hh hh] of the response
-        int a = buffer.get(2);
-        int b = buffer.get(3);
-        percentage = (a * 256 + b) / 32768;
-    }
+	/**
+	 * <p>
+	 * getRatio.
+	 * </p>
+	 * 
+	 * @return a double.
+	 */
+	public double getRatio() {
+		return (double) percentage;
+	}
 
-
-    /**
-     * <p>getRatio.</p>
-     *
-     * @return a double.
-     */
-    public double getRatio() {
-        return (double) percentage;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public String getName() {
-        return AvailableCommandNames.EQUIV_RATIO.getValue();
-    }
+	/** {@inheritDoc} */
+	@Override
+	public String getName() {
+		return AvailableCommandNames.EQUIV_RATIO.getValue();
+	}
 
 }
