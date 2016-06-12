@@ -23,5 +23,15 @@
         android:layout_alignLeft="@+id/btnBlueToothDevice"
         android:layout_below="@+id/btnBlueToothDevice"
         android:layout_marginTop="29dp"
-        android:text="RPM:" />
+        android:text="Start Monitoring The Car" />
+
+    <Button
+        android:id="@+id/btnStop"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/btnRPMValue"
+        android:layout_below="@+id/btnRPMValue"
+        android:layout_marginTop="26dp"
+        android:text="Bye Bye" />
+
 </RelativeLayout>
