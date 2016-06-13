@@ -17,29 +17,28 @@ import android.bluetooth.BluetoothSocket;
 import android.content.DialogInterface;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.Toast;
 
 import com.example.whereami_android_obdii_connector.task.ServiceConnector;
-import com.github.pires.obd.commands.SpeedCommand;
-import com.github.pires.obd.commands.engine.RPMCommand;
 import com.github.pires.obd.commands.protocol.EchoOffCommand;
 import com.github.pires.obd.commands.protocol.LineFeedOffCommand;
 import com.github.pires.obd.commands.protocol.SelectProtocolCommand;
 import com.github.pires.obd.commands.protocol.TimeoutCommand;
-import com.github.pires.obd.commands.temperature.AirIntakeTemperatureCommand;
 import com.github.pires.obd.enums.ObdProtocols;
 
-@SuppressLint("ShowToast") @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH) public class MainActivity extends Activity {
+@SuppressLint("ShowToast")
+@TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
+public class MainActivity extends Activity {
 
 	private BluetoothSocket socket = null;
 
 	private Button button = null;
-	
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -66,27 +65,32 @@ import com.github.pires.obd.enums.ObdProtocols;
 			}
 		});
 
-		final Button btnRPM = (Button) findViewById(R.id.btnRPMValue);
-		btnRPM.setOnClickListener(new OnClickListener() {
+		final Button btnMonitor = (Button) findViewById(R.id.btnMonitor);
+		btnMonitor.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
 				try {
 					new Thread(new Runnable() {
 						public void run() {
+							OBDListener obdListener = new OBDListener(socket);
+							VehicleInformation vInfo = null;
 							while (true) {
-								Integer rpm = getRPM();
-								Integer speed = getSpeed();
-								Float temp = getEngineTemperature();
-								VehicleInformation vInfo = new VehicleInformation().setRpm(rpm).setSpeed(speed).setEngineTemperature(temp);
+								vInfo = obdListener.getVehicleInfo();
+								Log.d("Vehicle Info ", vInfo.toString());
 								new ServiceConnector().execute(vInfo);
-								try {
-									Thread.sleep(1000);
-								} catch (InterruptedException e) {
-								}
+								//sleep(1000);
+							}
+						}
+
+						private void sleep(long milliSecs) {
+							try {
+								Thread.sleep(milliSecs);
+							} catch (Exception ex) {
 							}
 						};
 					}).start();
 				} catch (Exception ex) {
-					showErrorMessage(ex.getMessage() + " " + ex.getClass().getName(), "While RPM");
+					Log.e("MainActivity.btnMonitorListener", ex.toString());
+					showErrorMessage(ex.getMessage() + " " + ex.getClass().getName(), "MainActivity.btnMonitorListener");
 				}
 			}
 		});
@@ -154,39 +158,6 @@ import com.github.pires.obd.enums.ObdProtocols;
 		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.main, menu);
 		return true;
-	}
-
-	private Integer getRPM() {
-		RPMCommand engineRpmCommand = new RPMCommand();
-		try {
-			engineRpmCommand.run(socket.getInputStream(), socket.getOutputStream());
-			return engineRpmCommand.getRPM();
-		} catch (Exception e) {
-			showErrorMessage(e.getMessage(), "WhereAmI");
-			return null;
-		}
-	}
-
-	private Integer getSpeed() {
-		SpeedCommand speedCommand = new SpeedCommand();
-		try {
-			speedCommand.run(socket.getInputStream(), socket.getOutputStream());
-			return speedCommand.getMetricSpeed();
-		} catch (Exception e) {
-			showErrorMessage(e.getMessage(), "WhereAmI");
-			return null;
-		}
-	}
-
-	private Float getEngineTemperature() {
-		AirIntakeTemperatureCommand command = new AirIntakeTemperatureCommand();
-		try {
-			command.run(socket.getInputStream(), socket.getOutputStream());
-			return command.getTemperature();
-		} catch (Exception e) {
-			showErrorMessage(e.getMessage(), "WhereAmI");
-			return null;
-		}
 	}
 
 	public void showErrorMessage(String message, String title) {

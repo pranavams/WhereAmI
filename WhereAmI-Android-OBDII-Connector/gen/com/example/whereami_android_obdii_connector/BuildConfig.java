@@ -2,5 +2,5 @@
 package com.example.whereami_android_obdii_connector;
 
 public final class BuildConfig {
-	public final static boolean DEBUG = true;
+    public final static boolean DEBUG = true;
 }

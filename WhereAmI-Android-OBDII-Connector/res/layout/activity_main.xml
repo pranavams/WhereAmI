@@ -17,7 +17,7 @@
         android:text="Show Bluetooth Devices" />
 
     <Button
-        android:id="@+id/btnRPMValue"
+        android:id="@+id/btnMonitor"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignLeft="@+id/btnBlueToothDevice"
@@ -29,8 +29,8 @@
         android:id="@+id/btnStop"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/btnRPMValue"
-        android:layout_below="@+id/btnRPMValue"
+        android:layout_alignLeft="@+id/btnMonitor"
+        android:layout_below="@+id/btnMonitor"
         android:layout_marginTop="26dp"
         android:text="Bye Bye" />
 

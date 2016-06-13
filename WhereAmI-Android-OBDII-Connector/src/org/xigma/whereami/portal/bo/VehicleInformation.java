@@ -5,14 +5,32 @@ import java.sql.Timestamp;
 
 public class VehicleInformation {
 	private Timestamp updatedOn = null;
-	private Integer rpm, speed; 
+	private Integer rpm, speed;
 	private Float engineTemperature;
 	private GPSInfo location;
+	private Float engineLoad;
+	private Float fuelLevel;
+	private String vin;
 
 	public GPSInfo getLocation() {
 		if (location == null)
 			return new GPSInfo(null, null);
 		return location;
+	}
+
+	@Override
+	public String toString() {
+		return "VehicleInformation [updatedOn=" + updatedOn + ", rpm=" + rpm + ", speed=" + speed + ", engineTemperature="
+				+ engineTemperature + ", location=" + location + ", engineLoad=" + engineLoad + ", fuelLevel=" + fuelLevel + ", vin=" + vin
+				+ "]";
+	}
+
+	public String getVin() {
+		return vin;
+	}
+
+	public void setVin(String vin) {
+		this.vin = vin;
 	}
 
 	public VehicleInformation setLocation(GPSInfo location) {
@@ -64,7 +82,7 @@ public class VehicleInformation {
 		return this;
 	}
 
-	public BigDecimal getLattitude() {
+	public BigDecimal getLatitude() {
 		return this.getLocation().getLatitude();
 	}
 
@@ -94,5 +112,28 @@ public class VehicleInformation {
 		} catch (Exception ex) {
 			return this;
 		}
+	}
+
+	public VehicleInformation setEngineLoad(Float engineLoad) {
+		this.engineLoad = engineLoad;
+		return this;
+	}
+
+	public VehicleInformation setFuelLevel(Float fuelLevel) {
+		this.fuelLevel = fuelLevel;
+		return this;
+	}
+
+	public Float getEngineLoad() {
+		return engineLoad;
+	}
+
+	public Float getFuelLevel() {
+		return fuelLevel;
+	}
+
+	public VehicleInformation setVIN(String vin) {
+		this.vin = vin;
+		return this;
 	}
 }
