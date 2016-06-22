@@ -1,6 +1,7 @@
 package com.example.whereami_android_obdii_connector;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Set;
 import java.util.UUID;
@@ -51,7 +52,9 @@ public class MainActivity extends Activity {
 				try {
 					showBlueToothSelector();
 				} catch (Exception ex) {
-					showErrorMessage(ex.getMessage() + " " + ex.getClass().getName(), "While Showing Bluetooth");
+					showErrorMessage(ex.getMessage() + " "
+							+ ex.getClass().getName(),
+							"While Showing Bluetooth");
 				}
 			}
 		});
@@ -73,24 +76,28 @@ public class MainActivity extends Activity {
 						public void run() {
 							OBDListener obdListener = new OBDListener(socket);
 							VehicleInformation vInfo = null;
+							LocationService lService = new LocationService(
+									MainActivity.this);
 							while (true) {
 								vInfo = obdListener.getVehicleInfo();
 								Log.d("Vehicle Info ", vInfo.toString());
+
+								if (lService.canGetLocation()) {
+									vInfo.setLocation(BigDecimal
+											.valueOf(lService.getLatitude()),
+											BigDecimal.valueOf(lService
+													.getLongitude()));
+								}
 								new ServiceConnector().execute(vInfo);
-								//sleep(1000);
 							}
 						}
 
-						private void sleep(long milliSecs) {
-							try {
-								Thread.sleep(milliSecs);
-							} catch (Exception ex) {
-							}
-						};
 					}).start();
 				} catch (Exception ex) {
 					Log.e("MainActivity.btnMonitorListener", ex.toString());
-					showErrorMessage(ex.getMessage() + " " + ex.getClass().getName(), "MainActivity.btnMonitorListener");
+					showErrorMessage(ex.getMessage() + " "
+							+ ex.getClass().getName(),
+							"MainActivity.btnMonitorListener");
 				}
 			}
 		});
@@ -111,18 +118,22 @@ public class MainActivity extends Activity {
 		// show list
 		final AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
 
-		ArrayAdapter adapter = new ArrayAdapter(this, android.R.layout.select_dialog_singlechoice, deviceStrs.toArray(new String[deviceStrs
-				.size()]));
+		@SuppressWarnings({ "rawtypes", "unchecked" })
+		ArrayAdapter adapter = new ArrayAdapter(this,
+				android.R.layout.select_dialog_singlechoice,
+				deviceStrs.toArray(new String[deviceStrs.size()]));
 
-		alertDialog.setSingleChoiceItems(adapter, -1, new DialogInterface.OnClickListener() {
-			@Override
-			public void onClick(DialogInterface dialog, int which) {
-				dialog.dismiss();
-				int position = ((AlertDialog) dialog).getListView().getCheckedItemPosition();
-				connectToBluetoothDevice(devices.get(position));
-			}
+		alertDialog.setSingleChoiceItems(adapter, -1,
+				new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						dialog.dismiss();
+						int position = ((AlertDialog) dialog).getListView()
+								.getCheckedItemPosition();
+						connectToBluetoothDevice(devices.get(position));
+					}
 
-		});
+				});
 
 		alertDialog.setTitle("Choose Bluetooth device");
 		alertDialog.show();
@@ -141,13 +152,19 @@ public class MainActivity extends Activity {
 		}
 	}
 
-	private void initializeOBDAdaptor(BluetoothSocket socket) throws IOException {
+	private void initializeOBDAdaptor(BluetoothSocket socket)
+			throws IOException {
 		try {
-			new EchoOffCommand().run(socket.getInputStream(), socket.getOutputStream());
-			new LineFeedOffCommand().run(socket.getInputStream(), socket.getOutputStream());
-			new TimeoutCommand(5000).run(socket.getInputStream(), socket.getOutputStream());
-			new SelectProtocolCommand(ObdProtocols.AUTO).run(socket.getInputStream(), socket.getOutputStream());
-			this.button.setText("is BlueTooth Connected ? " + socket.isConnected());
+			new EchoOffCommand().run(socket.getInputStream(),
+					socket.getOutputStream());
+			new LineFeedOffCommand().run(socket.getInputStream(),
+					socket.getOutputStream());
+			new TimeoutCommand(5000).run(socket.getInputStream(),
+					socket.getOutputStream());
+			new SelectProtocolCommand(ObdProtocols.AUTO).run(
+					socket.getInputStream(), socket.getOutputStream());
+			this.button.setText("is BlueTooth Connected ? "
+					+ socket.isConnected());
 		} catch (InterruptedException e) {
 			showErrorMessage(e.getMessage(), "WhereAmI");
 		}
@@ -161,15 +178,22 @@ public class MainActivity extends Activity {
 	}
 
 	public void showErrorMessage(String message, String title) {
-		new AlertDialog.Builder(this).setTitle(title).setMessage(message)
-				.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-					public void onClick(DialogInterface dialog, int which) {
-						// continue with delete
-					}
-				}).setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
-					public void onClick(DialogInterface dialog, int which) {
-						// do nothing
-					}
-				}).setIcon(android.R.drawable.ic_dialog_alert).show();
+		new AlertDialog.Builder(this)
+				.setTitle(title)
+				.setMessage(message)
+				.setPositiveButton(android.R.string.yes,
+						new DialogInterface.OnClickListener() {
+							public void onClick(DialogInterface dialog,
+									int which) {
+								// continue with delete
+							}
+						})
+				.setNegativeButton(android.R.string.no,
+						new DialogInterface.OnClickListener() {
+							public void onClick(DialogInterface dialog,
+									int which) {
+								// do nothing
+							}
+						}).setIcon(android.R.drawable.ic_dialog_alert).show();
 	}
 }

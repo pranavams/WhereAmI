@@ -4,12 +4,10 @@ import org.xigma.whereami.portal.bo.VehicleInformation;
 
 import android.bluetooth.BluetoothSocket;
 
-import com.github.pires.obd.commands.PercentageObdCommand;
 import com.github.pires.obd.commands.SpeedCommand;
 import com.github.pires.obd.commands.control.VinCommand;
 import com.github.pires.obd.commands.engine.LoadCommand;
 import com.github.pires.obd.commands.engine.RPMCommand;
-import com.github.pires.obd.commands.fuel.FuelLevelCommand;
 import com.github.pires.obd.commands.temperature.AirIntakeTemperatureCommand;
 
 public class OBDListener {
