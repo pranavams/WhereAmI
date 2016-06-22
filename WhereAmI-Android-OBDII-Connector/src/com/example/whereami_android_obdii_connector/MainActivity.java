@@ -47,7 +47,6 @@ public class MainActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-		//getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
 		button = (Button) findViewById(R.id.btnBlueToothDevice);
 
@@ -65,7 +64,6 @@ public class MainActivity extends Activity {
 
 		buttonExit.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
-				getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 				finish();
 				System.exit(0);
 			}
