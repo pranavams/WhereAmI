@@ -3,7 +3,6 @@
     package="com.example.whereami_android_obdii_connector"
     android:versionCode="1"
     android:versionName="1.0" >
-
     <uses-sdk
         android:minSdkVersion="10"
         android:targetSdkVersion="18" />

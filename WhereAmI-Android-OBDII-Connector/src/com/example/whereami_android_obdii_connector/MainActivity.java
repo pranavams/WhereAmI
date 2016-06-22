@@ -70,6 +70,7 @@ public class MainActivity extends Activity {
 
 		final Button btnMonitor = (Button) findViewById(R.id.btnMonitor);
 		btnMonitor.setOnClickListener(new OnClickListener() {
+			
 			public void onClick(View v) {
 				try {
 					new Thread(new Runnable() {
