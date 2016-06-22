@@ -16,7 +16,11 @@ public class ServiceConnector extends AsyncTask<VehicleInformation, Void, String
 		params.add("rpm", getString(vInfo[0].getRpm()));
 		params.add("speed", getString(vInfo[0].getSpeed()));
 		params.add("engineTemperature", getString(vInfo[0].getEngineTemperature()));
-
+		if(vInfo[0].getLatitude() == null){
+			params.add("latitude", getString(vInfo[0].getLatitude()));
+			params.add("longitude", getString(vInfo[0].getLongitude()));
+			
+		}
 		client.get("http://friendsnfamily-xigma.rhcloud.com/rest/postVehicle", params,
 				new AsyncHttpResponseHandler());
 		return "";

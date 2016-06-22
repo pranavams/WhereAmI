@@ -4,6 +4,11 @@ import java.math.BigDecimal;
 
 public class GPSInfo {
 
+	@Override
+	public String toString() {
+		return "GPSInfo [latitude=" + latitude + ", longitude=" + longitude + "]";
+	}
+
 	private BigDecimal latitude;
 	private BigDecimal longitude;
 

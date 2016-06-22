@@ -15,13 +15,16 @@ import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
+import android.content.Context;
 import android.content.DialogInterface;
+import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.WindowManager;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 
@@ -44,6 +47,7 @@ public class MainActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
+		//getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
 		button = (Button) findViewById(R.id.btnBlueToothDevice);
 
@@ -52,9 +56,7 @@ public class MainActivity extends Activity {
 				try {
 					showBlueToothSelector();
 				} catch (Exception ex) {
-					showErrorMessage(ex.getMessage() + " "
-							+ ex.getClass().getName(),
-							"While Showing Bluetooth");
+					showErrorMessage(ex.getMessage() + " " + ex.getClass().getName(), "While Showing Bluetooth");
 				}
 			}
 		});
@@ -63,6 +65,7 @@ public class MainActivity extends Activity {
 
 		buttonExit.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
+				getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 				finish();
 				System.exit(0);
 			}
@@ -70,36 +73,39 @@ public class MainActivity extends Activity {
 
 		final Button btnMonitor = (Button) findViewById(R.id.btnMonitor);
 		btnMonitor.setOnClickListener(new OnClickListener() {
-			
+
 			public void onClick(View v) {
 				try {
+					final LocationService lService = getLocationService();
 					new Thread(new Runnable() {
 						public void run() {
 							OBDListener obdListener = new OBDListener(socket);
-							VehicleInformation vInfo = null;
-							LocationService lService = new LocationService(
-									MainActivity.this);
+							VehicleInformation vInfo = new VehicleInformation();
 							while (true) {
-								vInfo = obdListener.getVehicleInfo();
+								// vInfo = obdListener.getVehicleInfo();
+								vInfo.setLocation(BigDecimal.valueOf(lService.getLatitude()), BigDecimal.valueOf(lService.getLongitude()));
 								Log.d("Vehicle Info ", vInfo.toString());
-
-								if (lService.canGetLocation()) {
-									vInfo.setLocation(BigDecimal
-											.valueOf(lService.getLatitude()),
-											BigDecimal.valueOf(lService
-													.getLongitude()));
-								}
 								new ServiceConnector().execute(vInfo);
+								try {
+									Thread.sleep(10000);
+								} catch (InterruptedException ex) {
+
+								}
 							}
 						}
-
 					}).start();
 				} catch (Exception ex) {
 					Log.e("MainActivity.btnMonitorListener", ex.toString());
-					showErrorMessage(ex.getMessage() + " "
-							+ ex.getClass().getName(),
-							"MainActivity.btnMonitorListener");
+					showErrorMessage(ex.getMessage() + " " + ex.getClass().getName(), "MainActivity.btnMonitorListener");
 				}
+			}
+
+			private LocationService getLocationService() {
+				LocationManager lManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+				final LocationService lService = new LocationService();
+				lManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, lService);
+				lService.location = lManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+				return lService;
 			}
 		});
 
@@ -120,21 +126,18 @@ public class MainActivity extends Activity {
 		final AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
 
 		@SuppressWarnings({ "rawtypes", "unchecked" })
-		ArrayAdapter adapter = new ArrayAdapter(this,
-				android.R.layout.select_dialog_singlechoice,
-				deviceStrs.toArray(new String[deviceStrs.size()]));
+		ArrayAdapter adapter = new ArrayAdapter(this, android.R.layout.select_dialog_singlechoice, deviceStrs.toArray(new String[deviceStrs
+				.size()]));
 
-		alertDialog.setSingleChoiceItems(adapter, -1,
-				new DialogInterface.OnClickListener() {
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						dialog.dismiss();
-						int position = ((AlertDialog) dialog).getListView()
-								.getCheckedItemPosition();
-						connectToBluetoothDevice(devices.get(position));
-					}
+		alertDialog.setSingleChoiceItems(adapter, -1, new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				dialog.dismiss();
+				int position = ((AlertDialog) dialog).getListView().getCheckedItemPosition();
+				connectToBluetoothDevice(devices.get(position));
+			}
 
-				});
+		});
 
 		alertDialog.setTitle("Choose Bluetooth device");
 		alertDialog.show();
@@ -153,19 +156,13 @@ public class MainActivity extends Activity {
 		}
 	}
 
-	private void initializeOBDAdaptor(BluetoothSocket socket)
-			throws IOException {
+	private void initializeOBDAdaptor(BluetoothSocket socket) throws IOException {
 		try {
-			new EchoOffCommand().run(socket.getInputStream(),
-					socket.getOutputStream());
-			new LineFeedOffCommand().run(socket.getInputStream(),
-					socket.getOutputStream());
-			new TimeoutCommand(5000).run(socket.getInputStream(),
-					socket.getOutputStream());
-			new SelectProtocolCommand(ObdProtocols.AUTO).run(
-					socket.getInputStream(), socket.getOutputStream());
-			this.button.setText("is BlueTooth Connected ? "
-					+ socket.isConnected());
+			new EchoOffCommand().run(socket.getInputStream(), socket.getOutputStream());
+			new LineFeedOffCommand().run(socket.getInputStream(), socket.getOutputStream());
+			new TimeoutCommand(5000).run(socket.getInputStream(), socket.getOutputStream());
+			new SelectProtocolCommand(ObdProtocols.AUTO).run(socket.getInputStream(), socket.getOutputStream());
+			this.button.setText("is BlueTooth Connected ? " + socket.isConnected());
 		} catch (InterruptedException e) {
 			showErrorMessage(e.getMessage(), "WhereAmI");
 		}
@@ -179,22 +176,15 @@ public class MainActivity extends Activity {
 	}
 
 	public void showErrorMessage(String message, String title) {
-		new AlertDialog.Builder(this)
-				.setTitle(title)
-				.setMessage(message)
-				.setPositiveButton(android.R.string.yes,
-						new DialogInterface.OnClickListener() {
-							public void onClick(DialogInterface dialog,
-									int which) {
-								// continue with delete
-							}
-						})
-				.setNegativeButton(android.R.string.no,
-						new DialogInterface.OnClickListener() {
-							public void onClick(DialogInterface dialog,
-									int which) {
-								// do nothing
-							}
-						}).setIcon(android.R.drawable.ic_dialog_alert).show();
+		new AlertDialog.Builder(this).setTitle(title).setMessage(message)
+				.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int which) {
+						// continue with delete
+					}
+				}).setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int which) {
+						// do nothing
+					}
+				}).setIcon(android.R.drawable.ic_dialog_alert).show();
 	}
 }
