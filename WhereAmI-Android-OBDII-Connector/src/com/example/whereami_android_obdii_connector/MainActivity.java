@@ -83,7 +83,7 @@ public class MainActivity extends Activity {
 							while (true) {
 								vInfo = obdListener.getVehicleInfo();
 								vInfo.setLocation(BigDecimal.valueOf(lService.getLatitude()), BigDecimal.valueOf(lService.getLongitude()));
-//								Log.d("Vehicle Info ", vInfo.toString());
+								Log.d("Vehicle Info ", vInfo.toString());
 								new ServiceConnector().execute(vInfo);
 //								try {
 //									Thread.sleep(10000);
@@ -102,8 +102,8 @@ public class MainActivity extends Activity {
 			private LocationService getLocationService() {
 				LocationManager lManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 				final LocationService lService = new LocationService();
-				lManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 100, 	1, lService);
-				lService.location = lManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+				lManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 	0, lService);
+				lService.location = lManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
 				return lService;
 			}
 		});

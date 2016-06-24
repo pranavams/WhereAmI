@@ -27,7 +27,7 @@ public class LocationService extends Service implements LocationListener {
 
 	@Override
 	public void onLocationChanged(Location location) {
-		if(location != null)
+//		if(location != null)
 			this.location = location;
 	}
 

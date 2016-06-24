@@ -31,9 +31,13 @@ public class GPSInfo {
 	public GPSInfo(BigDecimal latitude, BigDecimal longitude) {
 		if(latitude != null && latitude.doubleValue() == 0)
 			this.latitude = null;
+		else
+			this.latitude = latitude;
 		
 		if(longitude != null && longitude.doubleValue() == 0)
 			this.longitude = null;
+		else
+			this.longitude = longitude;
 	}
 
 }
