@@ -29,8 +29,11 @@ public class GPSInfo {
 	}
 
 	public GPSInfo(BigDecimal latitude, BigDecimal longitude) {
-		this.latitude = latitude;
-		this.longitude = longitude;
+		if(latitude != null && latitude.doubleValue() == 0)
+			this.latitude = null;
+		
+		if(longitude != null && longitude.doubleValue() == 0)
+			this.longitude = null;
 	}
 
 }

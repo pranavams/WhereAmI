@@ -21,7 +21,6 @@ import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.WindowManager;
@@ -47,7 +46,8 @@ public class MainActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-
+		getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+		
 		button = (Button) findViewById(R.id.btnBlueToothDevice);
 
 		button.setOnClickListener(new OnClickListener() {
@@ -64,6 +64,7 @@ public class MainActivity extends Activity {
 
 		buttonExit.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
+				getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 				finish();
 				System.exit(0);
 			}
@@ -80,15 +81,15 @@ public class MainActivity extends Activity {
 							OBDListener obdListener = new OBDListener(socket);
 							VehicleInformation vInfo = new VehicleInformation();
 							while (true) {
-								// vInfo = obdListener.getVehicleInfo();
+								vInfo = obdListener.getVehicleInfo();
 								vInfo.setLocation(BigDecimal.valueOf(lService.getLatitude()), BigDecimal.valueOf(lService.getLongitude()));
-								Log.d("Vehicle Info ", vInfo.toString());
+//								Log.d("Vehicle Info ", vInfo.toString());
 								new ServiceConnector().execute(vInfo);
-								try {
-									Thread.sleep(10000);
-								} catch (InterruptedException ex) {
-
-								}
+//								try {
+//									Thread.sleep(10000);
+//								} catch (InterruptedException ex) {
+//
+//								}
 							}
 						}
 					}).start();
@@ -101,8 +102,8 @@ public class MainActivity extends Activity {
 			private LocationService getLocationService() {
 				LocationManager lManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 				final LocationService lService = new LocationService();
-				lManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, lService);
-				lService.location = lManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+				lManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 100, 	1, lService);
+				lService.location = lManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
 				return lService;
 			}
 		});
@@ -166,12 +167,6 @@ public class MainActivity extends Activity {
 		}
 	}
 
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		// Inflate the menu; this adds items to the action bar if it is present.
-		getMenuInflater().inflate(R.menu.main, menu);
-		return true;
-	}
 
 	public void showErrorMessage(String message, String title) {
 		new AlertDialog.Builder(this).setTitle(title).setMessage(message)
